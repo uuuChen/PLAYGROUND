@@ -218,9 +218,7 @@ class Max_Pool_Layer(Zero_Padding):
         return dLoss_dInput
 
     def forward_propagation(self, input_layer):
-
         self.input_layer = input_layer
-
         if self.padding == 'SAME':
             self.input_layer_zp, self.input_layer_origin_mask = self.input_layer_zero_padding(self.input_layer,
                                                                                               self.ksize,
@@ -231,7 +229,7 @@ class Max_Pool_Layer(Zero_Padding):
 
     def backward_propagation(self, dLoss_dOutput):
         input_layer = self.input_layer_zp if self.padding == 'SAME' else self.input_layer
-        dLoss_dInput = self.max_pool_prime(input_layer.shape, dLoss_dOutput, self.max_value_mask, self.strides,
+        dLoss_dInput = self.max_pool_prime(input_layer.shape, dLoss_dOutput, self.strides, self.max_value_mask,
                                            self.ksize)
         return dLoss_dInput
 
@@ -308,9 +306,7 @@ class Softmax_Layer:
             self.output[row, :] = exp_input_layer[row, :] / np.sum(exp_input_layer[row, :])
         return self.output
 
-
     def backward_propagation(self, dLoss_dOutput):
-
         dOutput_dInput = np.zeros(shape=(self.input_layer.shape[0], self.input_layer.shape[1],
                                          self.input_layer.shape[1]))
         for row in range(dOutput_dInput.shape[0]):
@@ -334,21 +330,19 @@ class Cross_Entropy_Layer:
     def forward_propagation(self, predict, one_hot_label):
         self.predict = predict
         self.one_hot_label = one_hot_label
-        self.small_number = 1e-10
-
+        self.epison = 1e-10
         self.output = np.mean(
                           np.sum(
-                              - self.one_hot_label * np.log(self.predict + self.small_number)
-                              - (1 - self.one_hot_label) * np.log((1 - self.predict + self.small_number)),
+                              - self.one_hot_label * np.log(self.predict + self.epison)
+                              - (1 - self.one_hot_label) * np.log((1 - self.predict + self.epison)),
                           axis=1)
                        )
         return self.output
 
     def backward_propagation(self):
-
         dLoss_dPredict = (1 / self.one_hot_label.shape[0]) * \
-                            ((- self.one_hot_label / (self.predict + self.small_number)) +
-                             ((1 - self.one_hot_label) / (1 - self.predict + self.small_number)))
+                            ((- self.one_hot_label / (self.predict + self.epison)) +
+                             ((1 - self.one_hot_label) / (1 - self.predict + self.epison)))
         return dLoss_dPredict
 
 

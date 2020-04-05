@@ -39,7 +39,7 @@ class NetWork:
         assert self.layers != [], 'you haven\'t build the graph yet'
         predict, loss = self._forward_propagation(input_data, input_label, keep_rate)
         self._backward_propagation()
-        self._update(learning_rate=learning_rate)
+        self._update(learning_rate)
         return predict, loss
 
     def sequence(self, *layers):
